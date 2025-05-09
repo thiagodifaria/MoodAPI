@@ -212,4 +212,4 @@ Este projeto está licenciado sob a licença MIT - veja o arquivo [LICENSE](LICE
 
 Thiago Di Faria - [thiagodifaria@gmail.com](mailto:thiagodifaria@gmail.com)
 
-Link do projeto: [https://github.com/seu-usuario/sentiment-api](https://github.com/seu-usuario/sentiment-api)
+Link do projeto: [https://github.com/thiagodifaria/MoodAPI](https://github.com/thiagodifaria/MoodAPI)
