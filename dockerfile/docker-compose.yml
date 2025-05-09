@@ -1,0 +1,17 @@
+services:
+  api:
+    build:
+      context: ../                # Define a raiz do projeto como contexto de build
+      dockerfile: dockerfile/dockerfile  # Caminho relativo ao contexto para o Dockerfile
+    container_name: sentiment-api
+    volumes:
+      - ../:/app                 # Monta todo o código-fonte na raiz em /app dentro do container
+      - ../data:/app/data        # Monta o diretório data na raiz em /app/data dentro do container
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=sqlite:///./data/sentiments.db
+      - DEBUG=True
+      - LOG_LEVEL=INFO
+      - ENVIRONMENT=development
+    restart: unless-stopped
