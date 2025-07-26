@@ -313,4 +313,4 @@ Distributed under the MIT License. See `LICENSE` for more information.
 
 ---
 
-⭐ **MoodAPI** - Sentiment analysis with multilingual precision and optimized performance.
+⭐ **MoodAPI** - Sentiment analysis with multilingual precision and optimized performance. 
