@@ -109,4 +109,4 @@ curl -X POST "http://localhost:8000/api/v1/sentiment/analyze" \
 
 ### 🌟 **Star this project if you find it useful!**
 
-**Made with ❤️ by [Thiago Di Faria](https://github.com/thiagodifaria)** 
+**Made with ❤️ by [Thiago Di Faria](https://github.com/thiagodifaria)**
