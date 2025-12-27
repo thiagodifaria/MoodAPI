@@ -1,90 +1,180 @@
-# MoodAPI - Multilingual Sentiment Analysis API
+# MoodAPI - Sentiment Analysis Platform
 
-API for sentiment analysis in texts using Natural Language Processing (NLP) techniques and state-of-the-art Transformer models. This project offers a complete solution for emotional classification of texts, including robust multilingual analysis of basic and detailed sentiments with high precision, intelligent cache system, advanced analytics, entity extraction, and history storage.
+MoodAPI is a complete multilingual sentiment analysis platform, developed with Python and FastAPI to provide high-precision emotional text classification. The project combines a robust sentiment analysis API based on state-of-the-art Transformer models with a modern, interactive web dashboard built in React. The architecture follows Clean Architecture principles with clear separation of responsibilities, ensuring modularity, scalability, and maintainability. The system stands out for its industrial terminal interface, real-time analytics, complete analysis history with advanced filters, and seamless integration between frontend and backend via Docker Compose.
 
 ## 🎯 Features
 
 - ✅ **Native multilingual analysis**: Support for Portuguese, English, Spanish with single Transformer model
-- ✅ **Individual and batch analysis**: Efficient processing of single text or multiple texts
-- ✅ **Intelligent cache**: Redis system with automatic fallback for high performance
-- ✅ **Complete history**: Storage, queries and advanced filters for analyses
-- ✅ **Real-time analytics**: Distributions, metrics and aggregated statistics
+- ✅ **Interactive web dashboard**: Modern industrial interface with metrics, charts, and real-time visualizations
+- ✅ **Individual and batch analysis**: Efficient processing of single or multiple texts
+- ✅ **Smart caching**: Redis system with automatic fallback for high performance
+- ✅ **Complete history**: Storage, querying, and advanced filtering of analyses
+- ✅ **Real-time analytics**: Distributions, metrics, and aggregated statistics
 - ✅ **Rate limiting**: Request rate control per endpoint and IP
-- ✅ **Health monitoring**: Health check for all components
-- ✅ **Containerization**: Ready deployment with Docker and Docker Compose
-- ✅ **Automated tests**: Complete functionality coverage
+- ✅ **Health monitoring**: Health verification of all components
+- ✅ **Containerization**: Production-ready deployment with Docker and Docker Compose
+- ✅ **Details modal**: Complete visualization of each analysis with detailed scores
+- ✅ **Quick examples**: Sample texts in multiple languages for immediate testing
+- ✅ **Flexible configuration**: Example and settings management via interface
 
-## 🏗️ Architecture
+## 🔧 Technologies
 
-Modular architecture with clear separation of responsibilities:
+### Backend - Core
+- **Python 3.10+**: Main language with modern async/await patterns
+- **FastAPI**: Modern web framework with high performance and automatic documentation
+- **Pydantic v2**: Data validation, serialization, and configuration management
+- **SQLAlchemy 2.0**: ORM with new syntax and async support
+
+### Backend - Machine Learning
+- **Transformers (Hugging Face)**: State-of-the-art multilingual Transformer models
+- **cardiffnlp/twitter-roberta-base-sentiment-latest**: Main analysis model
+- **LangDetect**: Automatic language detection
+
+### Backend - Infrastructure
+- **Redis**: High-performance cache with automatic fallback
+- **SQLite/PostgreSQL**: Data persistence with multiple database support
+- **Docker/Docker Compose**: Complete stack containerization
+
+### Frontend
+- **React 18+**: Modern library for user interfaces
+- **TypeScript**: Static typing for safer code
+- **TailwindCSS**: Utility CSS framework for styling
+- **Recharts**: Responsive chart library
+- **Lucide React**: Modern and consistent icons
+- **Axios**: HTTP client for API communication
+- **Vite**: Modern and fast build tool
+
+## 📈 Architecture
+
+### Backend Structure
 
 ```
 app/
 ├── core/           # Infrastructure (database, cache, exceptions)
-├── sentiment/      # ML Engine and sentiment analysis
-├── history/        # History, analytics and reports
-└── shared/         # Middleware, rate limiting and utilities
+├── sentiment/      # ML engine and sentiment analysis
+├── history/        # History, analytics, and reports
+└── shared/         # Middleware, rate limiting, and utilities
 ```
 
-## 🔧 Technology Stack
+### Frontend Structure
 
-### Core
-- **Python 3.10+**: Main language
-- **FastAPI**: Modern web framework with high performance
-- **Pydantic v2**: Data validation and configurations
-- **SQLAlchemy 2.0**: ORM with new syntax
+```
+frontend/
+├── src/
+│   ├── components/    # Reusable components (Cards, Sidebar, Modal)
+│   ├── pages/         # Application pages (Dashboard, Analysis, Logs)
+│   ├── services/      # API services and communication
+│   └── types/         # TypeScript types
+└── public/            # Static assets
+```
 
-### Machine Learning
-- **Transformers (Hugging Face)**: Multilingual Transformer models
-- **cardiffnlp/twitter-roberta-base-sentiment-latest**: Main model
-- **LangDetect**: Automatic language detection
+### Data Flow
 
-### Infrastructure
-- **Redis**: High performance cache with fallback
-- **SQLite**: Local development
-- **PostgreSQL**: Production database
-- **Docker**: Complete containerization
+```
+User (Web Dashboard)
+    ↓
+React Frontend (TailwindCSS + TypeScript)
+    ↓
+API Client (Axios)
+    ↓
+FastAPI Backend
+    ↓
+Services (Sentiment Analysis, History, Cache)
+    ↓
+Persistence (SQLite/PostgreSQL + Redis)
+```
 
-### Monitoring
-- **Structured Logging**: Structured JSON logs
-- **Health Checks**: Component verification
-- **Metrics**: Response time, cache hits, distributions
+## 🖥️ Dashboard Interface
+
+### Main Dashboard
+The dashboard presents a complete system overview with:
+- **Real-time KPIs**: Total analyses, average confidence, high confidence rate
+- **Interactive charts**: Confidence history and sentiment distribution
+- **Recent analyses table**: Quick view of latest analyses with detail access
+
+### Analysis Page
+Dedicated interface for performing new analyses with:
+- **Free text input**: Expandable text field for individual analysis
+- **Quick examples**: Sample texts in Portuguese and English for immediate testing
+- **Batch mode**: Support for analyzing multiple texts simultaneously
+- **Detailed results**: Complete scores for each sentiment category
+
+### Logs & History
+Complete analysis history management:
+- **Advanced filters**: By sentiment, language, period, and text search
+- **Pagination**: Efficient navigation through large data volumes
+- **Individual actions**: Detail viewing and record deletion
+- **Details modal**: Complete text, metadata, and scores when clicking any item
+
+### Settings
+System settings panel:
+- **Model status**: Information about loaded ML model
+- **Example management**: Add, edit, and remove sample texts
+- **Documentation links**: Direct access to Swagger UI and ReDoc
+
+### About
+Page with project information:
+- **Project description**: Purpose and features
+- **Technology stack**: Technologies used in backend and frontend
+- **Author and contact**: Contact information and relevant links
+
+## 📷 Screenshots
+
+### Dashboard - Overview with KPIs and Charts
+![Dashboard](public/dashboard.png)
+
+### Analysis - Sentiment Analysis Interface
+![Analysis](public/analysis.png)
+
+### Logs & History - Analysis Management
+![Logs](public/logs.png)
+
+### Settings - Configuration Panel
+![Settings](public/config.png)
+
+### About - Project Information
+![About](public/about.png)
 
 ## 📋 Prerequisites
 
 - Python 3.10+
-- Docker (optional for development, required for production)
+- Node.js 18+ (for frontend development)
+- Docker & Docker Compose (recommended)
 - Redis (optional, uses fallback if unavailable)
 
-## 🚀 Quick Installation
+## 🚀 Quick Start
 
-### Local Development
+### With Docker Compose (Recommended)
 
 ```bash
 # Clone repository
 git clone https://github.com/thiagodifaria/MoodAPI.git
 cd MoodAPI
 
-# Create virtual environment
+# Start all services
+cd dockerfile
+docker compose up --build
+
+# Access application
+# Frontend: http://localhost:3000
+# API Docs: http://localhost:8000/docs
+```
+
+### Local Development
+
+```bash
+# Backend
+cd MoodAPI
 python -m venv venv
 source venv/bin/activate  # Linux/Mac
 venv\Scripts\activate     # Windows
-
-# Install dependencies
 pip install -r requirements.txt
+uvicorn app.main:app --reload --port 8000
 
-# Start application
-python -m uvicorn app.main:app --reload
-```
-
-### With Docker (Recommended)
-
-```bash
-# Development
-docker-compose up --build
-
-# Production
-docker-compose -f docker-compose.prod.yml up -d
+# Frontend (in another terminal)
+cd frontend
+npm install
+npm run dev
 ```
 
 ## ⚙️ Configuration
@@ -120,14 +210,14 @@ MOODAPI_RATE_LIMIT__REQUESTS_PER_HOUR=1000
 ```bash
 curl -X POST "http://localhost:8000/api/v1/sentiment/analyze" \
      -H "Content-Type: application/json" \
-     -d '{"text": "I love this incredible product!"}'
+     -d '{"text": "I love this amazing product!"}'
 ```
 
 **Response:**
 ```json
 {
   "id": "c5d3b066-013b-4a9c-baeb-5f420200f796",
-  "text": "I love this incredible product!",
+  "text": "I love this amazing product!",
   "sentiment": "positive",
   "confidence": 0.9355,
   "language": "en",
@@ -136,9 +226,7 @@ curl -X POST "http://localhost:8000/api/v1/sentiment/analyze" \
     {"label": "neutral", "score": 0.0501},
     {"label": "negative", "score": 0.0144}
   ],
-  "timestamp": "2025-07-15T02:25:55.776352Z",
-  "processing_time_ms": 301.1,
-  "cached": false
+  "processing_time_ms": 156.2
 }
 ```
 
@@ -151,7 +239,7 @@ curl -X POST "http://localhost:8000/api/v1/sentiment/analyze-batch" \
        "texts": [
          "Excellent product!",
          "Terrible service",
-         "Regular experience"
+         "Average experience"
        ]
      }'
 ```
@@ -160,13 +248,10 @@ curl -X POST "http://localhost:8000/api/v1/sentiment/analyze-batch" \
 
 ```bash
 # Query with advanced filters
-curl "http://localhost:8000/api/v1/history?sentiment=positive&language=en&min_confidence=0.8&page=1&limit=20"
-
-# Analytics
-curl "http://localhost:8000/api/v1/analytics"
+curl "http://localhost:8000/api/v1/history?sentiment=positive&language=en&min_confidence=0.8"
 
 # Aggregated statistics
-curl "http://localhost:8000/api/v1/stats?period=7d&group_by=day"
+curl "http://localhost:8000/api/v1/history/stats?period=7d"
 ```
 
 ## 🔍 Main Endpoints
@@ -178,36 +263,8 @@ curl "http://localhost:8000/api/v1/stats?period=7d&group_by=day"
 | `/api/v1/sentiment/health` | GET | Service health check | 200/min |
 | `/api/v1/history` | GET | History with filters | 60/min |
 | `/api/v1/history/{id}` | GET/DELETE | Operations by ID | 100/min |
-| `/api/v1/analytics` | GET | Distributions and metrics | 20/min |
-| `/api/v1/stats` | GET | Aggregated statistics | 15/min |
-
-## 🧪 Tests
-
-### Run Tests
-
-```bash
-# All tests
-pytest
-
-# With coverage
-pytest --cov=app tests/
-
-# Specific tests
-pytest tests/test_sentiment.py
-pytest tests/test_history.py
-
-# Verbose
-pytest -v
-```
-
-### Test Coverage
-
-- ✅ Sentiment analysis (individual and batch)
-- ✅ History and complex filters
-- ✅ Analytics and statistics
-- ✅ Rate limiting and validations
-- ✅ Health checks and monitoring
-- ✅ Edge cases and error handling
+| `/api/v1/history/analytics` | GET | Distributions and metrics | 20/min |
+| `/api/v1/history/stats` | GET | Aggregated statistics | 15/min |
 
 ## 📈 Performance
 
@@ -221,78 +278,32 @@ pytest -v
 
 ### Optimizations
 
-- Redis cache with intelligent TTL
+- Redis cache with smart TTL
 - Optimized SQL queries with indexes
 - Single ML model loading
 - Background tasks for analytics
 - Connection pooling for database
 
-## 🐳 Production Deploy
+## 🐳 Production Deployment
 
-### Production Docker Compose
+### Docker Compose
 
 ```bash
-# Complete deploy
-docker-compose -f docker-compose.prod.yml up -d
+# Full deployment
+cd dockerfile
+docker compose up -d
 
 # Check health
-docker-compose ps
-curl http://localhost:8000/health
-```
-
-### Production Configuration
-
-- **Database**: PostgreSQL with connection pooling
-- **Cache**: Redis with persistence
-- **Workers**: Multiple Uvicorn workers
-- **Proxy**: Nginx as reverse proxy
-- **Monitoring**: Health checks and metrics
-- **Security**: Rate limiting and strict validation
-
-## 📊 Monitoring
-
-### Health Checks
-
-```bash
-# General health
-curl http://localhost:8000/health
-
-# Sentiment specific health
+docker compose ps
 curl http://localhost:8000/api/v1/sentiment/health
 ```
 
-### Available Metrics
+### Included Services
 
-- Request volume per endpoint
-- Average response time
-- Cache hits/misses rate
-- Sentiment distribution
-- Most analyzed languages
-- Error rate per component
-
-### Structured Logs
-
-```json
-{
-  "timestamp": "2025-07-15T10:30:00Z",
-  "level": "INFO",
-  "message": "Request completed",
-  "endpoint": "analyze",
-  "status_code": 200,
-  "process_time": 156.78,
-  "cached": false,
-  "sentiment": "positive",
-  "language": "en"
-}
-```
-
-## 🔒 Security
-
-- **Rate Limiting**: Protection against abuse by IP
-- **Input Validation**: Strict validation with Pydantic
-- **Error Handling**: No exposure of sensitive information
-- **Non-root Containers**: Secure containers
-- **Resource Limits**: CPU and memory limits
+- **moodapi-api**: FastAPI backend with ML model
+- **moodapi-frontend**: React dashboard with Nginx
+- **moodapi-db**: PostgreSQL for persistence
+- **moodapi-redis**: Redis for caching
 
 ## 📝 Documentation
 
@@ -308,9 +319,10 @@ Distributed under the MIT License. See `LICENSE` for more information.
 
 **Thiago Di Faria**
 - Email: thiagodifaria@gmail.com
+- Website: [thiagodifaria.com](https://thiagodifaria.com)
 - GitHub: [@thiagodifaria](https://github.com/thiagodifaria)
 - Project: [https://github.com/thiagodifaria/MoodAPI](https://github.com/thiagodifaria/MoodAPI)
 
 ---
 
-⭐ **MoodAPI** - Sentiment analysis with multilingual precision and optimized performance.
+⭐ **MoodAPI** - Multilingual sentiment analysis with precision, interactive dashboard, and optimized performance.

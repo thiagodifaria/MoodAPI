@@ -1,0 +1,73 @@
+# ============================================
+# MoodAPI - Production Docker Compose (Full Stack)
+# ============================================
+# Uso: docker compose -f docker-compose.prod.yml up -d
+# ============================================
+
+services:
+  # Backend API
+  api:
+    build:
+      context: .
+      dockerfile: dockerfile/Dockerfile
+    container_name: moodapi-api
+    environment:
+      - MOODAPI_DEBUG=false
+      - MOODAPI_ENVIRONMENT=production
+      - MOODAPI_LOG_LEVEL=WARNING
+      - MOODAPI_DATABASE__URL=sqlite:///./data/sentiments.db
+      - MOODAPI_CACHE__URL=redis://redis:6379/0
+      - MOODAPI_RATE_LIMIT__ENABLED=true
+      - MOODAPI_RATE_LIMIT__REQUESTS_PER_MINUTE=60
+      - MOODAPI_CORS_PRODUCTION_ORIGINS=["http://localhost","http://localhost:80"]
+    volumes:
+      - ./data:/app/data
+      - ./models:/app/models
+    ports:
+      - "8000:8000"
+    depends_on:
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: moodapi-redis
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6379:6379"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Frontend (React)
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: moodapi-frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - api
+    restart: unless-stopped
+
+volumes:
+  redis_data:
+    driver: local
+
+networks:
+  default:
+    name: moodapi-network

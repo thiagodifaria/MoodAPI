@@ -75,14 +75,20 @@ class CacheService:
         logger.info(f"CacheService inicializado - Fallback: {fallback_mode}")
     
     def _generate_cache_key(self, key: str) -> str:
-        """Gera chave com hash MD5 e prefixo."""
-        key_hash = hashlib.md5(key.encode('utf-8')).hexdigest()
+        """Gera chave com hash SHA256 e prefixo."""
+        key_hash = hashlib.sha256(key.encode('utf-8')).hexdigest()[:32]
         return settings.get_cache_key(f"hash:{key_hash}")
     
     def _serialize_value(self, value: Any) -> str:
-        """Serializa valor para JSON."""
+        """Serializa valor para JSON com suporte a datetime."""
+        def datetime_handler(obj):
+            """Handler para serializar datetime."""
+            if hasattr(obj, 'isoformat'):
+                return obj.isoformat()
+            raise TypeError(f"Object of type {type(obj).__name__} is not JSON serializable")
+        
         try:
-            return json.dumps(value, ensure_ascii=False, separators=(',', ':'))
+            return json.dumps(value, ensure_ascii=False, separators=(',', ':'), default=datetime_handler)
         except (TypeError, ValueError) as e:
             logger.error(f"Erro ao serializar: {e}")
             raise CacheError(

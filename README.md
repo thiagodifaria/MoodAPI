@@ -2,10 +2,11 @@
 
 ![MoodAPI Logo](https://img.shields.io/badge/MoodAPI-Sentiment%20Analysis-purple?style=for-the-badge&logo=brain)
 
-**Advanced Multilingual Sentiment Analysis API**
+**Advanced Multilingual Sentiment Analysis Platform**
 
 [![Python](https://img.shields.io/badge/Python-3.10+-3776ab?style=flat&logo=python&logoColor=white)](https://python.org)
 [![FastAPI](https://img.shields.io/badge/FastAPI-Latest-009688?style=flat&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
+[![React](https://img.shields.io/badge/React-18+-61dafb?style=flat&logo=react&logoColor=white)](https://react.dev)
 [![Transformers](https://img.shields.io/badge/🤗_Transformers-Latest-yellow?style=flat)](https://huggingface.co/transformers)
 [![License](https://img.shields.io/badge/License-MIT-green.svg?style=flat)](LICENSE)
 [![Docker](https://img.shields.io/badge/Docker-Ready-2496ed?style=flat&logo=docker&logoColor=white)](https://docker.com)
@@ -21,23 +22,25 @@
 
 ## 🎯 What is MoodAPI?
 
-MoodAPI is a **production-ready sentiment analysis API** that leverages state-of-the-art **Transformer models** to provide accurate, multilingual sentiment classification. Built with **FastAPI** and designed for high-performance applications.
+MoodAPI is a **production-ready sentiment analysis platform** that leverages state-of-the-art **Transformer models** to provide accurate, multilingual sentiment classification. It combines a powerful **FastAPI backend** with an interactive **React dashboard** for real-time analytics and monitoring.
 
 ### ⚡ Key Highlights
 
 - 🌍 **Multilingual Native Support** - Portuguese, English, Spanish with single unified model
+- 🖥️ **Interactive Dashboard** - Modern web interface with real-time KPIs and analytics
 - 🚀 **High Performance** - Redis caching, optimized queries, < 100ms response time
 - 📊 **Advanced Analytics** - Real-time statistics, distributions, and aggregated metrics
 - 🔄 **Batch Processing** - Analyze multiple texts efficiently in a single request
 - 📈 **Complete History** - Store, query, and filter all analysis results
 - 🛡️ **Production Ready** - Rate limiting, health checks, structured logging
-- 🐳 **Easy Deployment** - Docker Compose setup with Redis and PostgreSQL
+- 🐳 **Easy Deployment** - Docker Compose setup with all services included
 - 📚 **Auto Documentation** - Interactive Swagger UI and ReDoc
 
 ### 🏆 What Makes It Special?
 
 ```
 ✅ 93%+ accuracy with Transformer models
+✅ Modern React dashboard with industrial design
 ✅ Intelligent caching with Redis fallback
 ✅ Comprehensive rate limiting by endpoint
 ✅ Advanced filtering and search capabilities
@@ -53,11 +56,12 @@ MoodAPI is a **production-ready sentiment analysis API** that leverages state-of
 ```bash
 # Clone and run with all services
 git clone https://github.com/thiagodifaria/MoodAPI.git
-cd MoodAPI
-docker-compose up --build
+cd MoodAPI/dockerfile
+docker compose up --build
 
+# Dashboard available at: http://localhost:3000
 # API available at: http://localhost:8000
-# Docs available at: http://localhost:8000/docs
+# API Docs available at: http://localhost:8000/docs
 ```
 
 ### Option 2: Local Development

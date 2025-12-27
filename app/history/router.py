@@ -2,7 +2,7 @@ import time
 from typing import Annotated
 
 from fastapi import (
-    APIRouter, BackgroundTasks, Depends, HTTPException, Query, Request, status
+    APIRouter, BackgroundTasks, Depends, HTTPException, Path, Query, Request, status
 )
 from sqlalchemy.orm import Session
 
@@ -300,7 +300,13 @@ async def get_history(
 )
 @rate_limit(requests_per_minute=100, requests_per_hour=1000)
 async def get_analysis_by_id(
-    analysis_id: str,
+    analysis_id: Annotated[
+        str,
+        Path(
+            description="ID único da análise (UUID)",
+            pattern=r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+        )
+    ],
     background_tasks: BackgroundTasks,
     http_request: Request,
     db: Session = Depends(get_db_session),
@@ -309,11 +315,12 @@ async def get_analysis_by_id(
     """
     Recupera análise específica por ID.
     
-    - **analysis_id**: ID único da análise
+    - **analysis_id**: ID único da análise (formato UUID)
     
     Retorna dados completos incluindo texto original, sentimento,
     confiança, idioma e todos os scores detalhados.
     """
+    
     start_time = time.time()
     request_id = getattr(http_request.state, "request_id", "unknown")
     
@@ -349,7 +356,7 @@ async def get_analysis_by_id(
 
 
 @router.get(
-    "/../analytics",
+    "/analytics",
     response_model=AnalyticsResponse,
     status_code=status.HTTP_200_OK,
     summary="Obter analytics de sentimentos",
@@ -421,7 +428,7 @@ async def get_analytics(
 
 
 @router.get(
-    "/../stats",
+    "/stats",
     response_model=StatsResponse,
     status_code=status.HTTP_200_OK,
     summary="Obter estatísticas agregadas",

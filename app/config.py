@@ -106,11 +106,25 @@ class Settings(BaseSettings):
     log_level: Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"] = Field(default="INFO")
     log_format: str = Field(default="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
     
-    # Configurações de segurança
-    cors_origins: list[str] = Field(default=["*"])
+    # Configurações de segurança - CORS dinâmico baseado em ambiente
+    cors_origins: list[str] = Field(
+        default_factory=lambda: ["http://localhost:3000", "http://localhost:5173", "http://127.0.0.1:5173"]
+    )
     cors_allow_credentials: bool = Field(default=True)
-    cors_allow_methods: list[str] = Field(default=["GET", "POST"])
+    cors_allow_methods: list[str] = Field(default=["GET", "POST", "DELETE", "PUT", "PATCH", "OPTIONS"])
     cors_allow_headers: list[str] = Field(default=["*"])
+    
+    # Domínios permitidos em produção (configurável via env)
+    cors_production_origins: list[str] = Field(
+        default_factory=lambda: ["https://moodapi.example.com"]
+    )
+    
+    @property
+    def effective_cors_origins(self) -> list[str]:
+        """Retorna CORS origins baseado no ambiente."""
+        if self.is_production:
+            return self.cors_production_origins
+        return self.cors_origins
 
     @field_validator("log_level")
     @classmethod

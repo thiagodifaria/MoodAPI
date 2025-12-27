@@ -271,6 +271,10 @@ def setup_middleware(app):
     # 1. Timing
     app.add_middleware(TimingMiddleware)
     
+    # 1.5. Compression (comprime responses > 500 bytes)
+    from starlette.middleware.gzip import GZipMiddleware
+    app.add_middleware(GZipMiddleware, minimum_size=500)
+    
     # 2. Request Logging
     app.add_middleware(
         RequestLoggingMiddleware,
@@ -291,7 +295,7 @@ def setup_middleware(app):
     # 6. CORS (mais externo - aplicado primeiro)
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=settings.cors_origins,
+        allow_origins=settings.effective_cors_origins,  # Usa origins baseado no ambiente
         allow_credentials=settings.cors_allow_credentials,
         allow_methods=settings.cors_allow_methods,
         allow_headers=settings.cors_allow_headers,
@@ -303,7 +307,8 @@ def setup_middleware(app):
             "X-RateLimit-Remaining-Minute",
             "X-RateLimit-Reset-Minute",
             "X-RateLimit-Limit-Hour",
-            "X-RateLimit-Remaining-Hour"
+            "X-RateLimit-Remaining-Hour",
+            "Content-Encoding"  # Para compressão gzip
         ]
     )
     

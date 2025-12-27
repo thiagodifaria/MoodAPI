@@ -14,7 +14,8 @@ from app.core.exceptions import (
 )
 from app.sentiment.analyzer import get_sentiment_analyzer
 from app.sentiment.router import router as sentiment_router
-from app.history.router import router as history_router  # ADDED: Import history router
+from app.history.router import router as history_router
+from app.auth.router import router as auth_router  # NEW: Auth router
 from app.shared.middleware import setup_middleware
 from app.shared.rate_limiter import check_rate_limiter_health
 
@@ -45,16 +46,12 @@ async def lifespan(app: FastAPI):
         else:
             logger.warning("Cache Redis indisponível - usando fallback")
         
-        # 3. Carregar modelo de ML
-        logger.info("Carregando modelo de análise de sentimentos...")
+        # 3. Modelo de ML - LAZY LOADING
+        # Modelo agora é carregado sob demanda na primeira análise
+        logger.info("Modelo ML configurado para lazy loading (carregará na primeira análise)")
         analyzer = get_sentiment_analyzer()
         model_info = analyzer.get_model_info()
-        
-        if model_info.get("model_loaded"):
-            logger.info(f"Modelo carregado: {model_info['model_name']}")
-        else:
-            logger.error("Falha ao carregar modelo de ML")
-            raise RuntimeError("Modelo ML não disponível")
+        logger.info(f"Modelo configurado: {model_info['model_name']} (lazy loading)")
         
         # 4. Verificar health dos componentes
         logger.info("Verificando saúde dos componentes...")
@@ -107,11 +104,15 @@ app = FastAPI(
     openapi_url="/openapi.json" if settings.debug else None,
     openapi_tags=[
         {
+            "name": "authentication",
+            "description": "Autenticação e autorização JWT"
+        },
+        {
             "name": "sentiment-analysis",
             "description": "Análise de sentimentos multilíngue"
         },
         {
-            "name": "history-analytics",  # ADDED: New tag for history
+            "name": "history-analytics",
             "description": "Histórico de análises e analytics"
         },
         {
@@ -129,8 +130,9 @@ for exception_type, handler in get_exception_handlers().items():
     app.add_exception_handler(exception_type, handler)
 
 # Incluir routers
+app.include_router(auth_router)  # NEW: Auth router primeiro
 app.include_router(sentiment_router)
-app.include_router(history_router)  # ADDED: Include history router
+app.include_router(history_router)
 
 
 # Endpoints principais da aplicação

@@ -41,15 +41,33 @@ class SentimentAnalyzerMeta(type):
 
 
 class SentimentAnalyzer(metaclass=SentimentAnalyzerMeta):
-    """Engine de Machine Learning para análise de sentimentos multilíngue."""
+    """Engine de Machine Learning para análise de sentimentos multilíngue.
+    
+    Implementa lazy loading: modelo só é carregado na primeira análise.
+    """
     
     def __init__(self):
         self._pipeline = None
         self._device = None
         self._model_loaded = False
+        self._loading = False  # Flag para evitar carregamento duplo
         self._lock = threading.Lock()
-        self._load_model()
-        logger.info("SentimentAnalyzer inicializado")
+        # LAZY LOADING: NÃO carrega modelo no init
+        logger.info("SentimentAnalyzer inicializado (modelo será carregado sob demanda)")
+    
+    def _ensure_model_loaded(self) -> None:
+        """Garante que o modelo está carregado (lazy loading thread-safe)."""
+        if self._model_loaded:
+            return
+        
+        with self._lock:
+            # Double-check locking
+            if not self._model_loaded and not self._loading:
+                self._loading = True
+                try:
+                    self._load_model()
+                finally:
+                    self._loading = False
     
     def _load_model(self) -> None:
         """Carrega modelo transformer uma única vez."""
@@ -303,6 +321,9 @@ class SentimentAnalyzer(metaclass=SentimentAnalyzerMeta):
             InvalidTextError: Se texto for inválido
             ModelInferenceError: Se análise falhar
         """
+        # LAZY LOADING: Garante que modelo está carregado
+        self._ensure_model_loaded()
+        
         if not self._model_loaded or not self._pipeline:
             raise ModelNotAvailableError(
                 model_name=settings.ml.model_name,
@@ -345,7 +366,9 @@ class SentimentAnalyzer(metaclass=SentimentAnalyzerMeta):
     
     def analyze_batch(self, texts: List[str]) -> List[Dict[str, Any]]:
         """
-        Analisa múltiplos textos em lote.
+        Analisa múltiplos textos em lote usando processamento batch nativo.
+        
+        OTIMIZADO: Usa o pipeline batch do Transformers para melhor performance.
         
         Args:
             texts: Lista de textos para análise
@@ -356,37 +379,103 @@ class SentimentAnalyzer(metaclass=SentimentAnalyzerMeta):
         if not texts:
             return []
         
+        # LAZY LOADING: Garante que modelo está carregado
+        self._ensure_model_loaded()
+        
+        if not self._model_loaded or not self._pipeline:
+            raise ModelNotAvailableError(
+                model_name=settings.ml.model_name,
+                details={"model_loaded": self._model_loaded}
+            )
+        
         results = []
-        batch_size = min(len(texts), settings.ml.batch_size)
+        batch_size = settings.ml.batch_size
         
-        logger.debug(f"Processando {len(texts)} textos em lotes de {batch_size}")
+        logger.debug(f"Processando {len(texts)} textos com batch nativo (size={batch_size})")
         
-        for i in range(0, len(texts), batch_size):
-            batch = texts[i:i + batch_size]
+        try:
+            # Pré-processar todos os textos
+            normalized_texts = []
+            languages = []
+            valid_indices = []
             
-            for text in batch:
+            for i, text in enumerate(texts):
                 try:
-                    result = self.analyze(text)
-                    results.append(result)
-                except Exception as e:
-                    logger.error(f"Erro na análise em lote para texto {i}: {e}")
-                    # Retornar resultado neutro em caso de erro
-                    results.append({
-                        "sentiment": "neutral",
-                        "confidence": 0.0,
-                        "language": "en",
-                        "all_scores": [],
-                        "error": str(e)
-                    })
-        
-        return results
+                    normalized = self._normalize_text(text)
+                    lang = self._detect_language(normalized)
+                    normalized_texts.append(normalized)
+                    languages.append(lang)
+                    valid_indices.append(i)
+                except InvalidTextError as e:
+                    logger.warning(f"Texto {i} inválido: {e}")
+                    # Placeholder para manter ordem
+                    normalized_texts.append(None)
+                    languages.append("en")
+            
+            # BATCH NATIVO: Processa todos os textos válidos de uma vez
+            valid_texts = [t for t in normalized_texts if t is not None]
+            
+            if valid_texts:
+                with self._lock:
+                    # Pipeline batch nativo - MUITO mais eficiente
+                    raw_batch_results = self._pipeline(
+                        valid_texts,
+                        batch_size=batch_size
+                    )
+                
+                # Mapear resultados de volta
+                valid_idx = 0
+                for i, text in enumerate(normalized_texts):
+                    if text is not None:
+                        try:
+                            raw_result = raw_batch_results[valid_idx]
+                            sentiment_result = self._normalize_sentiment_result([raw_result] if isinstance(raw_result, dict) else raw_result)
+                            results.append({
+                                "sentiment": sentiment_result["sentiment"],
+                                "confidence": sentiment_result["confidence"],
+                                "language": languages[i],
+                                "all_scores": sentiment_result["all_scores"]
+                            })
+                        except Exception as e:
+                            logger.error(f"Erro ao processar resultado {i}: {e}")
+                            results.append(self._create_error_result(str(e)))
+                        valid_idx += 1
+                    else:
+                        results.append(self._create_error_result("Texto inválido"))
+            else:
+                # Todos os textos eram inválidos
+                results = [self._create_error_result("Texto inválido") for _ in texts]
+            
+            logger.debug(f"Batch processing concluído: {len(results)} resultados")
+            return results
+            
+        except Exception as e:
+            logger.error(f"Erro no batch processing: {e}")
+            # Fallback: processar um por um
+            logger.warning("Fallback para processamento sequencial")
+            return [self.analyze(text) if text else self._create_error_result("Texto vazio") for text in texts]
+    
+    def _create_error_result(self, error_msg: str) -> Dict[str, Any]:
+        """Cria resultado de erro padronizado."""
+        return {
+            "sentiment": "neutral",
+            "confidence": 0.0,
+            "language": "en",
+            "all_scores": [],
+            "error": error_msg
+        }
     
     def get_model_info(self) -> Dict[str, Any]:
         """Retorna informações sobre o modelo carregado."""
+        # Handle lazy loading - device may be None if model not loaded
+        device = "not_loaded"
+        if self._device is not None:
+            device = "cuda" if self._device >= 0 else "cpu"
+        
         return {
             "model_name": settings.ml.model_name,
             "model_loaded": self._model_loaded,
-            "device": "cuda" if self._device >= 0 else "cpu",
+            "device": device,
             "max_text_length": settings.ml.max_text_length,
             "min_text_length": settings.ml.min_text_length,
             "batch_size": settings.ml.batch_size,
