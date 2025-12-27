@@ -1,17 +1,39 @@
 services:
+  # Backend API
   api:
     build:
-      context: ../                # Define a raiz do projeto como contexto de build
-      dockerfile: dockerfile/dockerfile  # Caminho relativo ao contexto para o Dockerfile
-    container_name: sentiment-api
+      context: ../
+      dockerfile: dockerfile/Dockerfile
+    container_name: moodapi-api
     volumes:
-      - ../:/app                 # Monta todo o código-fonte na raiz em /app dentro do container
-      - ../data:/app/data        # Monta o diretório data na raiz em /app/data dentro do container
+      - ../data:/app/data
     ports:
       - "8000:8000"
     environment:
-      - DATABASE_URL=sqlite:///./data/sentiments.db
-      - DEBUG=True
-      - LOG_LEVEL=INFO
-      - ENVIRONMENT=development
+      - MOODAPI_DATABASE__URL=sqlite:///./data/sentiments.db
+      - MOODAPI_DEBUG=true
+      - MOODAPI_LOG_LEVEL=INFO
+      - MOODAPI_ENVIRONMENT=development
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  # Frontend React
+  frontend:
+    build:
+      context: ../frontend
+      dockerfile: Dockerfile
+    container_name: moodapi-frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - api
+    restart: unless-stopped
+
+networks:
+  default:
+    name: moodapi-network
