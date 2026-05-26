@@ -1,0 +1,2 @@
+"""Kafka/Redpanda streaming integration."""
+

@@ -1,116 +1,117 @@
 # MoodAPI
 
-![MoodAPI Logo](https://img.shields.io/badge/MoodAPI-Sentiment%20Analysis-purple?style=for-the-badge&logo=brain)
+![MoodAPI](https://img.shields.io/badge/MoodAPI-Sentiment%20Intelligence-111827?style=for-the-badge&logo=fastapi&logoColor=white)
 
-**Advanced Multilingual Sentiment Analysis Platform**
+**Production-minded sentiment intelligence platform with Transformer inference, auditable prediction history, async processing, event streaming, semantic search and local observability.**
 
-[![Python](https://img.shields.io/badge/Python-3.10+-3776ab?style=flat&logo=python&logoColor=white)](https://python.org)
-[![FastAPI](https://img.shields.io/badge/FastAPI-Latest-009688?style=flat&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
-[![React](https://img.shields.io/badge/React-18+-61dafb?style=flat&logo=react&logoColor=white)](https://react.dev)
-[![Transformers](https://img.shields.io/badge/🤗_Transformers-Latest-yellow?style=flat)](https://huggingface.co/transformers)
-[![License](https://img.shields.io/badge/License-MIT-green.svg?style=flat)](LICENSE)
-[![Docker](https://img.shields.io/badge/Docker-Ready-2496ed?style=flat&logo=docker&logoColor=white)](https://docker.com)
-
----
-
-## 🌍 **Documentation / Documentação**
-
-**📖 [🇺🇸 Read in English](README_EN.md)**  
-**📖 [🇧🇷 Leia em Português](README_PT.md)**
+[![Python](https://img.shields.io/badge/Python-3.11+-3776AB?style=flat&logo=python&logoColor=white)](https://python.org)
+[![FastAPI](https://img.shields.io/badge/FastAPI-API-009688?style=flat&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
+[![React](https://img.shields.io/badge/React-client%20web-61DAFB?style=flat&logo=react&logoColor=111827)](https://react.dev)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-audit%20storage-4169E1?style=flat&logo=postgresql&logoColor=white)](https://postgresql.org)
+[![Redis](https://img.shields.io/badge/Redis-cache%20%2B%20rate%20limit-DC382D?style=flat&logo=redis&logoColor=white)](https://redis.io)
+[![RabbitMQ](https://img.shields.io/badge/RabbitMQ-async%20jobs-FF6600?style=flat&logo=rabbitmq&logoColor=white)](https://rabbitmq.com)
+[![Qdrant](https://img.shields.io/badge/Qdrant-semantic%20search-DC244C?style=flat)](https://qdrant.tech)
+[![License](https://img.shields.io/badge/License-MIT-success?style=flat)](LICENSE)
 
 ---
 
-## 🎯 What is MoodAPI?
+## Documentation / Documentacao
 
-MoodAPI is a **production-ready sentiment analysis platform** that leverages state-of-the-art **Transformer models** to provide accurate, multilingual sentiment classification. It combines a powerful **FastAPI backend** with an interactive **React dashboard** for real-time analytics and monitoring.
-
-### ⚡ Key Highlights
-
-- 🌍 **Multilingual Native Support** - Portuguese, English, Spanish with single unified model
-- 🖥️ **Interactive Dashboard** - Modern web interface with real-time KPIs and analytics
-- 🚀 **High Performance** - Redis caching, optimized queries, < 100ms response time
-- 📊 **Advanced Analytics** - Real-time statistics, distributions, and aggregated metrics
-- 🔄 **Batch Processing** - Analyze multiple texts efficiently in a single request
-- 📈 **Complete History** - Store, query, and filter all analysis results
-- 🛡️ **Production Ready** - Rate limiting, health checks, structured logging
-- 🐳 **Easy Deployment** - Docker Compose setup with all services included
-- 📚 **Auto Documentation** - Interactive Swagger UI and ReDoc
-
-### 🏆 What Makes It Special?
-
-```
-✅ 93%+ accuracy with Transformer models
-✅ Modern React dashboard with industrial design
-✅ Intelligent caching with Redis fallback
-✅ Comprehensive rate limiting by endpoint
-✅ Advanced filtering and search capabilities
-✅ Real-time analytics and monitoring
-✅ Modular architecture with clear separation
-```
+**Repository:** [thiagodifaria/MoodAPI](https://github.com/thiagodifaria/MoodAPI)  
+**Leia em Portugues:** [README_PT.md](README_PT.md)  
+**Read the detailed English README:** [README_EN.md](README_EN.md)  
+**Architecture:** [docs/ARQUITETURA.md](docs/ARQUITETURA.md)
 
 ---
 
-## ⚡ Quick Start
+## Visual Preview
 
-### Option 1: Docker Compose (Recommended)
+### Single Analysis
+
+![MoodAPI single analysis](client-web/public/images/screenshots/single-analysis.png)
+
+### Batch Analysis
+
+![MoodAPI batch analysis](client-web/public/images/screenshots/batch-analysis.png)
+
+### Prediction History
+
+![MoodAPI prediction history](client-web/public/images/screenshots/history.png)
+
+### Semantic Search
+
+![MoodAPI semantic search](client-web/public/images/screenshots/semantic-search.png)
+
+### Health Check
+
+![MoodAPI health check](client-web/public/images/screenshots/health.png)
+
+---
+
+## What is MoodAPI?
+
+MoodAPI is a compact AI platform shaped like a real backend product. It receives text, runs multilingual sentiment inference, persists predictions for audit/history, indexes records for semantic search and exposes a React technical console for validating the API.
+
+The project is intentionally organized as a portfolio-grade service: the root stays clean, backend code lives under `service-api/`, frontend code lives under `client-web/`, infrastructure lives under `infra/`, and database assets stay separated by technology.
+
+---
+
+## Highlights
+
+- FastAPI backend with Pydantic v2 validation.
+- React/Vite technical console for real endpoint testing.
+- Hugging Face Transformer sentiment inference.
+- PostgreSQL audit/history storage.
+- Redis cache and rate limiting.
+- RabbitMQ/Celery asynchronous jobs.
+- Redpanda/Kafka-compatible event streaming.
+- Qdrant semantic search with multilingual embeddings.
+- Prometheus, Grafana and OpenTelemetry local observability.
+- Bash scripts for build and test workflows.
+
+---
+
+## Quick Start
+
 ```bash
-# Clone and run with all services
-git clone https://github.com/thiagodifaria/MoodAPI.git
-cd MoodAPI/dockerfile
-docker compose up --build
-
-# Dashboard available at: http://localhost:3000
-# API available at: http://localhost:8000
-# API Docs available at: http://localhost:8000/docs
+./scripts/build.sh up
 ```
 
-### Option 2: Local Development
-```bash
-git clone https://github.com/thiagodifaria/MoodAPI.git
-cd MoodAPI
-pip install -r requirements.txt
-uvicorn app.main:app --reload
-```
+Useful local URLs:
 
-### 🔥 Test It Now!
-```bash
-# Analyze sentiment
-curl -X POST "http://localhost:8000/api/v1/sentiment/analyze" \
-     -H "Content-Type: application/json" \
-     -d '{"text": "I love this amazing product!"}'
-
-# Response:
-# {
-#   "sentiment": "positive",
-#   "confidence": 0.9355,
-#   "language": "en",
-#   "processing_time_ms": 89.2
-# }
-```
+| Surface | URL |
+|---------|-----|
+| Client Web | `http://localhost:3000` |
+| API | `http://localhost:8000` |
+| Swagger | `http://localhost:8000/docs` |
+| Metrics | `http://localhost:8000/metrics` |
+| Prometheus | `http://localhost:9090` |
+| Grafana | `http://localhost:3001` |
+| RabbitMQ UI | `http://localhost:15672` |
+| Qdrant | `http://localhost:6333` |
 
 ---
 
-## 🔍 API Overview
+## Validation
 
-| Feature | Endpoint | Description |
-|---------|----------|-------------|
-| 🎯 **Individual Analysis** | `POST /api/v1/sentiment/analyze` | Analyze single text |
-| 📦 **Batch Analysis** | `POST /api/v1/sentiment/analyze-batch` | Analyze multiple texts |
-| 📊 **Analytics** | `GET /api/v1/analytics` | Get distributions and metrics |
-| 📈 **Statistics** | `GET /api/v1/stats` | Aggregated stats with time filters |
-| 📋 **History** | `GET /api/v1/history` | Query with advanced filters |
-| 🏥 **Health Check** | `GET /health` | Service health monitoring |
+```bash
+./scripts/build.sh check
+./scripts/test.sh all
+```
+
+The validation flow covers backend linting, typing, tests, frontend build and Docker Compose configuration.
 
 ---
 
-## 📞 Contact
+## Contact
 
-**Thiago Di Faria** - thiagodifaria@gmail.com
+**Thiago DI Faria** - thiagodifaria@gmail.com
 
 [![GitHub](https://img.shields.io/badge/GitHub-@thiagodifaria-black?style=flat&logo=github)](https://github.com/thiagodifaria)
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-Thiago_DI_Faria-blue?style=flat&logo=linkedin)](https://linkedin.com/in/thiagodifaria)
 
 ---
 
-### 🌟 **Star this project if you find it useful!**
+## License
 
-**Made with ❤️ by [Thiago Di Faria](https://github.com/thiagodifaria)**
+Licensed under the [MIT License](LICENSE).

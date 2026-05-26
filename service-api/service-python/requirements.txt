@@ -1,0 +1,49 @@
+# Core FastAPI
+fastapi>=0.100.0
+uvicorn[standard]>=0.24.0
+pydantic>=2.5.0
+pydantic-settings>=2.0.0
+email-validator>=2.0.0
+starlette>=0.27.0
+
+# Análise de Sentimentos  
+transformers>=4.35.0
+torch>=2.0.0
+tokenizers>=0.20.0
+langdetect
+
+# Banco de Dados
+sqlalchemy>=2.0.0
+alembic>=1.13.0
+psycopg2-binary>=2.9.9
+
+# Cache
+redis>=5.0.0
+
+# Filas, streaming e busca semÃ¢ntica
+celery>=5.4.0
+aiokafka>=0.10.0
+qdrant-client>=1.11.0
+
+# Observabilidade
+prometheus-client>=0.20.0
+opentelemetry-api>=1.25.0
+opentelemetry-sdk>=1.25.0
+opentelemetry-exporter-otlp>=1.25.0
+opentelemetry-instrumentation-fastapi>=0.46b0
+opentelemetry-instrumentation-sqlalchemy>=0.46b0
+opentelemetry-instrumentation-redis>=0.46b0
+psutil>=5.9.8
+
+# Utilitários
+python-multipart>=0.0.6
+python-jose[cryptography]>=3.3.0
+passlib[bcrypt]>=1.7.4
+
+# Desenvolvimento
+pytest>=7.4.0
+pytest-asyncio>=0.21.0
+httpx>=0.25.0
+ruff>=0.6.0
+mypy>=1.11.0
+types-redis>=4.6.0.20241004

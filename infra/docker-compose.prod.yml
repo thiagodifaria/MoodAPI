@@ -1,0 +1,228 @@
+# ============================================
+# MoodAPI - Production Docker Compose (Full Stack)
+# ============================================
+# Uso: docker compose -f docker-compose.prod.yml up -d
+# ============================================
+
+services:
+  # Backend API
+  api:
+    image: moodapi-api:prod
+    build:
+      context: ../service-api/service-python
+      dockerfile: Dockerfile
+    container_name: moodapi-api
+    environment:
+      - MOODAPI_DEBUG=false
+      - MOODAPI_ENVIRONMENT=production
+      - MOODAPI_LOG_LEVEL=WARNING
+      - MOODAPI_ML__MODEL_NAME=lxyuan/distilbert-base-multilingual-cased-sentiments-student
+      - MOODAPI_DATABASE__URL=postgresql+psycopg2://moodapi:moodapi@postgres:5432/moodapi
+      - MOODAPI_CACHE__URL=redis://redis:6379/0
+      - MOODAPI_RATE_LIMIT__ENABLED=true
+      - MOODAPI_RATE_LIMIT__REQUESTS_PER_MINUTE=60
+      - MOODAPI_QUEUE__ENABLED=true
+      - MOODAPI_QUEUE__BROKER_URL=amqp://moodapi:moodapi@rabbitmq:5672//
+      - MOODAPI_QUEUE__RESULT_BACKEND=redis://redis:6379/1
+      - MOODAPI_STREAMING__ENABLED=true
+      - MOODAPI_STREAMING__BOOTSTRAP_SERVERS=redpanda:9092
+      - MOODAPI_VECTOR__ENABLED=true
+      - MOODAPI_VECTOR__URL=http://qdrant:6333
+      - MOODAPI_VECTOR__COLLECTION_NAME=moodapi_sentiments_v2
+      - MOODAPI_VECTOR__EMBEDDING_MODEL_NAME=sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2
+      - MOODAPI_VECTOR__SEARCH_SCORE_THRESHOLD=0.35
+      - MOODAPI_CORS_PRODUCTION_ORIGINS=["http://localhost","http://localhost:80"]
+    volumes:
+      - ../service-api/service-python/data:/app/data
+      - ../service-api/service-python/models:/app/models
+      - ../service-api/service-postgresql:/service-postgresql:ro
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      qdrant:
+        condition: service_started
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health/ready"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  # Redis Cache
+  postgres:
+    image: postgres:16-alpine
+    container_name: moodapi-postgres
+    environment:
+      POSTGRES_DB: moodapi
+      POSTGRES_USER: moodapi
+      POSTGRES_PASSWORD: moodapi
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U moodapi -d moodapi"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: moodapi-redis
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6379:6379"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  rabbitmq:
+    image: rabbitmq:3.13-management-alpine
+    container_name: moodapi-rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: moodapi
+      RABBITMQ_DEFAULT_PASS: moodapi
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redpanda:
+    image: redpandadata/redpanda:v24.2.18
+    container_name: moodapi-redpanda
+    command:
+      - redpanda
+      - start
+      - --overprovisioned
+      - --smp
+      - "1"
+      - --memory
+      - 512M
+      - --reserve-memory
+      - 0M
+      - --node-id
+      - "0"
+      - --check=false
+      - --kafka-addr
+      - PLAINTEXT://0.0.0.0:9092
+      - --advertise-kafka-addr
+      - PLAINTEXT://redpanda:9092
+    volumes:
+      - redpanda_data:/var/lib/redpanda/data
+    restart: unless-stopped
+
+  qdrant:
+    image: qdrant/qdrant:v1.12.4
+    container_name: moodapi-qdrant
+    volumes:
+      - qdrant_data:/qdrant/storage
+    restart: unless-stopped
+
+  celery-worker:
+    image: moodapi-api:prod
+    build:
+      context: ../service-api/service-python
+      dockerfile: Dockerfile
+    container_name: moodapi-celery-worker
+    command: celery -A app.workers.celery_app.celery_app worker --loglevel=WARNING --queues=sentiment.analysis
+    environment:
+      - MOODAPI_ENVIRONMENT=production
+      - MOODAPI_ML__MODEL_NAME=lxyuan/distilbert-base-multilingual-cased-sentiments-student
+      - MOODAPI_DATABASE__URL=postgresql+psycopg2://moodapi:moodapi@postgres:5432/moodapi
+      - MOODAPI_CACHE__URL=redis://redis:6379/0
+      - MOODAPI_QUEUE__ENABLED=true
+      - MOODAPI_QUEUE__BROKER_URL=amqp://moodapi:moodapi@rabbitmq:5672//
+      - MOODAPI_QUEUE__RESULT_BACKEND=redis://redis:6379/1
+      - MOODAPI_VECTOR__ENABLED=true
+      - MOODAPI_VECTOR__URL=http://qdrant:6333
+      - MOODAPI_VECTOR__COLLECTION_NAME=moodapi_sentiments_v2
+      - MOODAPI_VECTOR__EMBEDDING_MODEL_NAME=sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2
+      - MOODAPI_VECTOR__SEARCH_SCORE_THRESHOLD=0.35
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      qdrant:
+        condition: service_started
+    restart: unless-stopped
+    volumes:
+      - ../service-api/service-postgresql:/service-postgresql:ro
+
+  stream-worker:
+    image: moodapi-api:prod
+    build:
+      context: ../service-api/service-python
+      dockerfile: Dockerfile
+    container_name: moodapi-stream-worker
+    command: python -m app.streaming.consumer
+    environment:
+      - MOODAPI_ENVIRONMENT=production
+      - MOODAPI_ML__MODEL_NAME=lxyuan/distilbert-base-multilingual-cased-sentiments-student
+      - MOODAPI_DATABASE__URL=postgresql+psycopg2://moodapi:moodapi@postgres:5432/moodapi
+      - MOODAPI_CACHE__URL=redis://redis:6379/0
+      - MOODAPI_STREAMING__ENABLED=true
+      - MOODAPI_STREAMING__BOOTSTRAP_SERVERS=redpanda:9092
+      - MOODAPI_VECTOR__ENABLED=true
+      - MOODAPI_VECTOR__URL=http://qdrant:6333
+      - MOODAPI_VECTOR__COLLECTION_NAME=moodapi_sentiments_v2
+      - MOODAPI_VECTOR__EMBEDDING_MODEL_NAME=sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2
+      - MOODAPI_VECTOR__SEARCH_SCORE_THRESHOLD=0.35
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      redpanda:
+        condition: service_started
+      qdrant:
+        condition: service_started
+    restart: unless-stopped
+    volumes:
+      - ../service-api/service-postgresql:/service-postgresql:ro
+
+  # Frontend (React)
+  frontend:
+    image: moodapi-frontend:prod
+    build:
+      context: ../client-web
+      dockerfile: Dockerfile
+    container_name: moodapi-frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - api
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+  rabbitmq_data:
+    driver: local
+  redpanda_data:
+    driver: local
+  qdrant_data:
+    driver: local
+
+networks:
+  default:
+    name: moodapi-network
