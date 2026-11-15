@@ -1,6 +1,6 @@
 # MoodAPI
 
-![MoodAPI](https://img.shields.io/badge/MoodAPI-BACKEND%20SHOWCASE-111827?style=for-the-badge&logo=fastapi&logoColor=white)
+![MoodAPI](https://img.shields.io/badge/MoodAPI-Sentiment%20Intelligence-111827?style=for-the-badge&logo=fastapi&logoColor=white) ![Showcase Category](https://img.shields.io/badge/Category-BACKEND%20SHOWCASE-111827?style=for-the-badge)
 
 **Production-minded sentiment intelligence platform with Transformer inference, auditable prediction history, async processing, event streaming, semantic search and local observability.**
 
